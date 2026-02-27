@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title data-i18n="pageTitle">Fair Digital Dice</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Custom scrollbar configuration for the protocol terminal UI */
+        #protocol-logs::-webkit-scrollbar { width: 6px; }
+        #protocol-logs::-webkit-scrollbar-track { background: transparent; }
+        #protocol-logs::-webkit-scrollbar-thumb { background: #475569; border-radius: 10px; }
+        
+        /* Utility classes for hardware-accelerated modal transitions */
+        .modal-active { opacity: 1; pointer-events: auto; transform: scale(1); }
+        .modal-inactive { opacity: 0; pointer-events: none; transform: scale(0.95); }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen font-sans overflow-x-hidden relative">
+
+    <div id="toast-container" class="fixed top-5 right-5 z-50 flex flex-col gap-3 transition-all duration-300 pointer-events-none"></div>
+
+    <nav class="border-b border-slate-700 p-4 bg-slate-800 shadow-md">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-tight text-indigo-400 flex items-center">
+                <i class="fas fa-dice-six mr-2"></i>
+                <span data-i18n="appTitle">Fair Digital Dice</span>
+            </h1>
+            
+            <div class="flex items-center gap-4">
+                <button type="button" onclick="LocalizationService.toggleLanguage()" class="flex items-center gap-2 text-sm bg-slate-700 hover:bg-slate-600 px-3 py-1.5 rounded-lg transition-colors border border-slate-600">
+                    <span id="lang-icon">🇬🇧</span> <span id="lang-text" class="font-medium">EN</span>
+                </button>
+                
+                <div id="user-status-container" class="text-sm font-semibold text-slate-400 bg-slate-700 px-4 py-1.5 rounded-full transition-colors duration-300 flex items-center">
+                    <i class="fas fa-user-circle mr-1"></i> 
+                    <span id="user-status-text" data-i18n="statusOffline">Offline</span>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto mt-8 p-4 max-w-6xl">
+        <div id="main-layout" class="flex flex-col lg:flex-row gap-8 transition-all duration-500">
+            
+            <section id="game-section" class="flex-1 space-y-6 transition-all duration-500 opacity-80">
+                <div class="bg-slate-800 p-6 rounded-2xl border border-slate-700 shadow-lg">
+                    <h2 class="text-2xl font-bold mb-6 text-center text-slate-200" data-i18n="boardTitle">Game Board</h2>
+                    
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 text-center flex flex-col items-center justify-center relative overflow-hidden">
+                            <h3 class="text-lg font-medium text-slate-300 mb-2" data-i18n="localRollTitle">Your Roll</h3>
+                            <div id="local-dice" class="text-7xl my-6 text-indigo-500 transition-transform transform">
+                                <i class="fas fa-dice-d6"></i>
+                            </div>
+                            <button id="btn-roll" type="button" onclick="GameEngine.handleRollAction()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg shadow-indigo-500/30 transition duration-200 flex justify-center items-center">
+                                <i class="fas fa-hand-sparkles mr-2"></i> <span data-i18n="btnRoll">Roll Dice</span>
+                            </button>
+                        </div>
+
+                        <div class="bg-slate-900 p-6 rounded-xl border border-slate-700 text-center flex flex-col items-center justify-center relative overflow-hidden">
+                            <h3 class="text-lg font-medium text-slate-300 mb-2" data-i18n="serverRollTitle">Opponent (Server)</h3>
+                            <div id="server-dice" class="text-7xl my-6 text-slate-600 transition-colors duration-300">
+                                <i class="fas fa-question-circle"></i>
+                            </div>
+                            <p id="server-status" class="text-sm text-slate-500" data-i18n="serverWait">Waiting for player to roll...</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-black/40 rounded-xl p-6 border border-slate-800 shadow-inner flex flex-col h-72">
+                    <h3 class="text-sm font-bold uppercase tracking-widest text-slate-500 mb-3 flex justify-between items-center">
+                        <span data-i18n="termTitle">Protocol Terminal</span>
+                        <i class="fas fa-terminal"></i>
+                    </h3>
+                    
+                    <div id="protocol-logs" class="space-y-2 font-mono text-sm flex-1 overflow-y-auto text-slate-400 p-2">
+                        <div>> <span data-i18n="termInit">System awaiting authentication...</span></div>
+                    </div>
+
+                    <div class="border-t border-slate-700/80 pt-4 mt-2">
+                        <p class="text-[11px] text-slate-500 leading-relaxed" data-i18n="termDisclaimer">
+                            Αυτό το παιχνίδι χρησιμοποιεί ένα Πρωτόκολλο Δέσμευσης (Commitment Scheme). Και τα δύο μέρη δεσμεύονται σε μια τιμή πριν την αποκαλύψουν, εξασφαλίζοντας ότι κανένα δεν μπορεί να αλλάξει τη ρίψη του αφού δει τη ρίψη του άλλου.
+                        </p>
+                    </div>
+                </div>
+            </section>
+
+            <section id="auth-section" class="w-full lg:w-1/3 transition-all duration-500">
+                <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 shadow-xl relative overflow-hidden">
+                    
+                    <div id="form-login" class="transition-all duration-300">
+                        <h2 class="text-2xl font-bold mb-6" data-i18n="loginTitle">Secure Login</h2>
+                        <form onsubmit="AuthService.authenticate(event)" class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblUsername">Username</label>
+                                <input type="text" required value="player1" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblPassword">Password</label>
+                                <input type="password" required value="123456" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                            </div>
+                            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition duration-200 mt-2 flex justify-center items-center">
+                                <span data-i18n="btnLogin">Login</span>
+                            </button>
+                        </form>
+                        <p class="text-center text-sm text-slate-400 mt-6">
+                            <span data-i18n="txtNoAcc">Don't have an account?</span> 
+                            <button type="button" onclick="AuthService.toggleForms()" class="text-indigo-400 hover:text-indigo-300 font-medium ml-1" data-i18n="btnSwitchReg">Register</button>
+                        </p>
+                    </div>
+
+                    <div id="form-register" class="hidden transition-all duration-300">
+                        <h2 class="text-2xl font-bold mb-6" data-i18n="regTitle">New Registration</h2>
+                        <form onsubmit="AuthService.register(event)" class="space-y-4">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblFirst">First Name</label>
+                                    <input type="text" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 focus:border-indigo-500 outline-none transition text-white">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblLast">Last Name</label>
+                                    <input type="text" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 focus:border-indigo-500 outline-none transition text-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblUsername">Username</label>
+                                <input type="text" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblPassword">Password</label>
+                                <input type="password" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-200 mt-2 flex justify-center items-center">
+                                <span data-i18n="btnSignup">Sign Up</span>
+                            </button>
+                        </form>
+                        <p class="text-center text-sm text-slate-400 mt-6">
+                            <span data-i18n="txtHasAcc">Already have an account?</span> 
+                            <button type="button" onclick="AuthService.toggleForms()" class="text-emerald-400 hover:text-emerald-300 font-medium ml-1" data-i18n="btnSwitchLog">Login</button>
+                        </p>
+                    </div>
+
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <div id="result-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm transition-all duration-300 modal-inactive">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl shadow-2xl p-10 max-w-lg w-full text-center relative overflow-hidden transform transition-all duration-300">
+            <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-indigo-500 via-purple-500 to-emerald-500"></div>
+            
+            <div id="modal-icon" class="text-6xl mb-4"></div>
+            <h2 id="modal-title" class="text-4xl font-black mb-4 text-white uppercase tracking-wide"></h2>
+            <p id="modal-desc" class="text-lg text-slate-300 mb-8 leading-relaxed"></p>
+            
+            <button type="button" onclick="GameEngine.resetState()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full font-bold transition-all shadow-lg hover:shadow-indigo-500/50 w-full flex justify-center items-center">
+                <span data-i18n="btnRestart">Start New Round</span>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * Global Application State
+         * @typedef {Object} AppState
+         * @property {boolean} isAuthenticated - Tracks if the user session is active.
+         * @property {boolean} isProcessingTurn - Mutex lock to prevent multiple roll executions.
+         * @property {string} lang - Current active localization locale ('el' or 'en').
+         */
+        const AppState = {
+            isAuthenticated: false,
+            isProcessingTurn: false,
+            lang: 'el'
+        };
+
+        /**
+         * FontAwesome icons mapping for standard D6 faces.
+         * Index maps to (Dice Value - 1).
+         * @constant {string[]}
+         */
+        const DICE_FACES = [
+            '<i class="fas fa-dice-one"></i>', '<i class="fas fa-dice-two"></i>',
+            '<i class="fas fa-dice-three"></i>', '<i class="fas fa-dice-four"></i>',
+            '<i class="fas fa-dice-five"></i>', '<i class="fas fa-dice-six"></i>'
+        ];
+
+        /**
+         * Localization Dictionary (i18n) containing all application strings.
+         * Built with Vanilla JS to prevent CDN loading failures.
+         * @constant {Object}
+         */
+        const translations = {
+            el: {
+                pageTitle: "Τίμια Ψηφιακά Ζάρια",
+                appTitle: "Τίμια Ψηφιακά Ζάρια",
+                statusOffline: "Μη συνδεδεμένος",
+                statusOnline: "Συνδεδεμένος",
+                boardTitle: "Ταμπλό Παιχνιδιού",
+                localRollTitle: "Η δική σου ρίψη",
+                btnRoll: "Ρίψη Ζαριού",
+                serverRollTitle: "Αντίπαλος (Server)",
+                serverWait: "Αναμονή ρίψης παίκτη...",
+                termTitle: "Terminal Πρωτοκόλλου",
+                termInit: "Σύστημα σε αναμονή αυθεντικοποίησης...",
+                loginTitle: "Είσοδος",
+                lblUsername: "Username",
+                lblPassword: "Password",
+                btnLogin: "Είσοδος",
+                txtNoAcc: "Δεν έχετε λογαριασμό;",
+                btnSwitchReg: "Εγγραφή",
+                regTitle: "Νέα Εγγραφή",
+                lblFirst: "Όνομα",
+                lblLast: "Επίθετο",
+                btnSignup: "Εγγραφή",
+                txtHasAcc: "Έχετε ήδη λογαριασμό;",
+                btnSwitchLog: "Είσοδος",
+                btnRestart: "Έναρξη Νέου Γύρου",
+                
+                toastAuthReqTitle: "Απαιτείται Σύνδεση",
+                toastAuthReqDesc: "Πρέπει να συνδεθείτε στον λογαριασμό σας για να παίξετε.",
+                toastRegSuccessTitle: "Επιτυχής Εγγραφή",
+                toastRegSuccessDesc: "Ο λογαριασμός δημιουργήθηκε. Παρακαλώ συνδεθείτε.",
+                toastLoginSuccessTitle: "Καλωσήρθατε",
+                toastLoginSuccessDesc: "Επιτυχής σύνδεση στο σύστημα.",
+                
+                logAuthReq: "Αίτημα εγγραφής χρήστη στο σύστημα...",
+                logAuthSuccess: "Επιτυχής αυθεντικοποίηση. Έναρξη συνεδρίας.",
+                logAwaitRoll: "Αναμονή ρίψης ζαριού από τον παίκτη...",
+                logRolling: "Ρίψη τοπικού ζαριού...",
+                logGenRA: "Παραγωγή τυχαίου string rA (Παίκτης).",
+                logSendCommit: "Αποστολή αιτήματος δέσμευσης στον Server...",
+                logRecvRB: "Λήψη τυχαίου string rB από Server.",
+                logCalcHash: "Υπολογισμός h_commit = SHA256(Roll || rA || rB)...",
+                logSendHash: "Αποστολή h_commit στον Server (Commit Phase).",
+                logRevealOpen: "Αποκάλυψη του τοπικού ζαριού και του rA (Open Phase).",
+                logVerify: "Ο Server επαληθεύει το Hash... [ΕΠΙΤΥΧΙΑ]",
+                logNewRound: "--- Αρχικοποίηση νέου γύρου ---",
+                termDisclaimer: "Αυτό το παιχνίδι χρησιμοποιεί ένα Πρωτόκολλο Δέσμευσης (Commitment Scheme). Και τα δύο μέρη δεσμεύονται σε μια τιμή πριν την αποκαλύψουν, εξασφαλίζοντας ότι κανένα δεν μπορεί να αλλάξει τη ρίψη του αφού δει τη ρίψη του άλλου.",
+                
+                // Dynamic string generators
+                logLocalResult: (val) => `Τοπικό αποτέλεσμα: [${val}]`,
+                srvProcessing: () => "Επεξεργασία...",
+                srvRevealed: () => "Ο Server αποκάλυψε το ζάρι",
+                logServerReveal: (val) => `Ο Server αποκάλυψε το αποτέλεσμά του: [${val}]`,
+                
+                modWinTitle: "Νικητής!",
+                modWinDesc: (c, s) => `Το <strong>${c}</strong> κερδίζει το <strong>${s}</strong>.<br>Η κρυπτογραφική επαλήθευση ολοκληρώθηκε επιτυχώς.`,
+                modLoseTitle: "Ηττηθήκατε",
+                modLoseDesc: (c, s) => `Ο Server επικράτησε με <strong>${s}</strong> έναντι του <strong>${c}</strong>.`,
+                modDrawTitle: "Ισοπαλία",
+                modDrawDesc: (c) => `Και τα δύο μέρη έφεραν <strong>${c}</strong>.`
+            },
+            en: {
+                pageTitle: "Fair Digital Dice",
+                appTitle: "Fair Digital Dice",
+                statusOffline: "Offline",
+                statusOnline: "Online",
+                boardTitle: "Game Board",
+                localRollTitle: "Your Roll",
+                btnRoll: "Roll Dice",
+                serverRollTitle: "Opponent (Server)",
+                serverWait: "Waiting for player to roll...",
+                termTitle: "Protocol Terminal",
+                termInit: "System awaiting authentication...",
+                loginTitle: "Secure Login",
+                lblUsername: "Username",
+                lblPassword: "Password",
+                btnLogin: "Login",
+                txtNoAcc: "Don't have an account?",
+                btnSwitchReg: "Register",
+                regTitle: "New Registration",
+                lblFirst: "First Name",
+                lblLast: "Last Name",
+                btnSignup: "Sign Up",
+                txtHasAcc: "Already have an account?",
+                btnSwitchLog: "Login",
+                btnRestart: "Start New Round",
+
+                toastAuthReqTitle: "Authentication Required",
+                toastAuthReqDesc: "You must be logged in to participate in the protocol.",
+                toastRegSuccessTitle: "Registration Successful",
+                toastRegSuccessDesc: "Account created successfully. Please login.",
+                toastLoginSuccessTitle: "Welcome",
+                toastLoginSuccessDesc: "Successfully authenticated to the system.",
+
+                logAuthReq: "Initiating user registration request...",
+                logAuthSuccess: "Authentication successful. Session established.",
+                logAwaitRoll: "Awaiting initial dice roll from the client...",
+                logRolling: "Executing local physical roll simulation...",
+                logGenRA: "Generating random cryptographic nonce rA (Client)...",
+                logSendCommit: "Transmitting commitment request to Server...",
+                logRecvRB: "Received server nonce rB.",
+                logCalcHash: "Calculating h_commit = SHA256(Roll || rA || rB)...",
+                logSendHash: "Transmitting h_commit payload to Server (Commit Phase).",
+                logRevealOpen: "Revealing local Roll & rA to Server (Open Phase).",
+                logVerify: "Server successfully verified Hash signature. [VERIFIED]",
+                logNewRound: "--- Initialization of new cryptographic round ---",
+                termDisclaimer: "This game uses a Commitment Scheme. Both parties commit to a value before revealing, ensuring neither can change their roll after seeing the other's.",
+                
+                // Dynamic string generators
+                logLocalResult: (val) => `Local result captured: [${val}]`,
+                srvProcessing: () => "Processing...",
+                srvRevealed: () => "Server revealed value",
+                logServerReveal: (val) => `Server revealed its committed result: [${val}]`,
+                
+                modWinTitle: "Winner!",
+                modWinDesc: (c, s) => `Your roll of <strong>${c}</strong> defeats the server's <strong>${s}</strong>.<br>Cryptographic verification completed successfully.`,
+                modLoseTitle: "Defeat",
+                modLoseDesc: (c, s) => `The Server won with a roll of <strong>${s}</strong> against your <strong>${c}</strong>.`,
+                modDrawTitle: "Draw",
+                modDrawDesc: (c) => `Both parties committed to a roll of <strong>${c}</strong>.`
+            }
+        };
+
+        /**
+         * Localization Service
+         * Handles switching between EN and EL and updating the DOM elements dynamically.
+         */
+        const LocalizationService = {
+            /**
+             * Toggles the active application language and triggers a DOM re-render.
+             */
+            toggleLanguage() {
+                AppState.lang = AppState.lang === 'el' ? 'en' : 'el';
+                const dict = translations[AppState.lang];
+                
+                // Update language UI elements
+                document.getElementById('lang-icon').innerText = AppState.lang === 'el' ? '🇬🇧' : '🇬🇷';
+                document.getElementById('lang-text').innerText = AppState.lang === 'el' ? 'EN' : 'EL';
+                
+                // Scan the DOM and replace strings based on data-i18n tags
+                document.querySelectorAll('[data-i18n]').forEach(el => {
+                    const key = el.getAttribute('data-i18n');
+                    if (dict[key]) {
+                        el.innerText = dict[key];
+                    }
+                });
+
+                // Manually update dynamically changing session text
+                if (AppState.isAuthenticated) {
+                    document.getElementById('user-status-text').innerText = dict.statusOnline;
+                }
+            }
+        };
+
+        /**
+         * UI Manager
+         * Utility service for rendering toast notifications and logging to the terminal.
+         */
+        const UIManager = {
+            /**
+             * Appends a log entry to the cryptographic terminal.
+             * @param {string} msgKey - Translation dictionary key or literal string.
+             * @param {string} [colorClass="text-slate-300"] - Tailwind CSS class for text color.
+             */
+            logTerminal(msgKey, colorClass = "text-slate-300") {
+                const terminal = document.getElementById('protocol-logs');
+                const logEntry = document.createElement('div');
+                logEntry.className = colorClass;
+                
+                // Check if key exists in dictionary, otherwise use literal text
+                const text = translations[AppState.lang][msgKey] || msgKey;
+                logEntry.innerHTML = `> ${text}`;
+                
+                terminal.appendChild(logEntry);
+                terminal.scrollTop = terminal.scrollHeight; // Auto-scroll to bottom
+            },
+
+            /**
+             * Renders an animated toast notification in the UI.
+             * @param {string} titleKey - Key for the toast title.
+             * @param {string} descKey - Key for the toast description.
+             * @param {string} [type="error"] - Defines the visual theme ("error", "success", "info").
+             */
+            showToast(titleKey, descKey, type = "error") {
+                const container = document.getElementById('toast-container');
+                const toast = document.createElement('div');
+                
+                const title = translations[AppState.lang][titleKey] || titleKey;
+                const desc = translations[AppState.lang][descKey] || descKey;
+
+                const borderColors = { error: 'border-rose-500', success: 'border-emerald-500', info: 'border-blue-500' };
+                const iconColors = { error: '<i class="fas fa-exclamation-circle text-rose-500"></i>', success: '<i class="fas fa-check-circle text-emerald-500"></i>' };
+
+                toast.className = `bg-slate-800 border-l-4 ${borderColors[type]} p-4 rounded shadow-xl flex items-start gap-3 w-80 transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
+                toast.innerHTML = `<div class="mt-0.5 text-lg">${iconColors[type]}</div><div><h4 class="font-bold text-slate-100">${title}</h4><p class="text-sm text-slate-400 mt-1">${desc}</p></div>`;
+                
+                container.appendChild(toast);
+                
+                // Request animation frame for smooth sliding entrance
+                requestAnimationFrame(() => toast.classList.remove('translate-x-full', 'opacity-0'));
+                
+                // Remove DOM node after delay
+                setTimeout(() => {
+                    toast.classList.add('translate-x-full', 'opacity-0');
+                    setTimeout(() => toast.remove(), 300);
+                }, 4000);
+            }
+        };
+
+        /**
+         * Authentication Service
+         * Handles user registration, login mechanics, and layout switching.
+         */
+        const AuthService = {
+            /**
+             * Toggles visibility between the Login and Registration forms.
+             */
+            toggleForms() {
+                document.getElementById('form-login').classList.toggle('hidden');
+                document.getElementById('form-register').classList.toggle('hidden');
+            },
+
+            /**
+             * Simulates the registration workflow.
+             * @param {Event} event - HTML Form submission event.
+             */
+            register(event) {
+                event.preventDefault();
+                UIManager.logTerminal("logAuthReq", "text-blue-400");
+                
+                setTimeout(() => {
+                    UIManager.showToast("toastRegSuccessTitle", "toastRegSuccessDesc", "success");
+                    this.toggleForms();
+                }, 600);
+            },
+
+            /**
+             * Simulates the authentication payload validation and activates the session.
+             * @param {Event} event - HTML Form submission event.
+             */
+            authenticate(event) {
+                event.preventDefault();
+                AppState.isAuthenticated = true; // Unlock the game state
+                
+                // Transition layout views
+                document.getElementById('auth-section').classList.add('hidden');
+                document.getElementById('game-section').classList.remove('opacity-80');
+                
+                const dict = translations[AppState.lang];
+                const statusContainer = document.getElementById('user-status-container');
+                statusContainer.classList.replace('bg-slate-700', 'bg-slate-800');
+                statusContainer.innerHTML = `<i class="fas fa-user-check text-emerald-400 mr-1"></i> <span id="user-status-text" data-i18n="statusOnline">${dict.statusOnline}</span>`;
+                
+                UIManager.logTerminal("logAuthSuccess", "text-emerald-400 font-bold");
+                UIManager.logTerminal("logAwaitRoll");
+                UIManager.showToast("toastLoginSuccessTitle", "toastLoginSuccessDesc", "success");
+            }
+        };
+
+        /**
+         * Core Game Engine
+         * Orchestrates the cryptographic commitment protocol and resolves the winner.
+         */
+        const GameEngine = {
+            /**
+             * Validates game state and initiates the local roll sequence.
+             */
+            handleRollAction() {
+                if (!AppState.isAuthenticated) {
+                    UIManager.showToast("toastAuthReqTitle", "toastAuthReqDesc", "error");
+                    return;
+                }
+                
+                if (AppState.isProcessingTurn) return; // Mutex check prevents spam-clicking
+
+                AppState.isProcessingTurn = true;
+                document.getElementById('btn-roll').classList.add('opacity-50', 'cursor-not-allowed');
+                
+                this.executeLocalRoll();
+            },
+
+            /**
+             * Simulates the physical hardware roll and captures the local entropy value.
+             */
+            executeLocalRoll() {
+                UIManager.logTerminal("logRolling", "text-yellow-400");
+                const localResult = Math.floor(Math.random() * 6) + 1;
+                const diceElement = document.getElementById('local-dice');
+                
+                let animationFrames = 0;
+                const rollInterval = setInterval(() => {
+                    diceElement.innerHTML = DICE_FACES[Math.floor(Math.random() * 6)];
+                    animationFrames++;
+                    
+                    if (animationFrames > 12) {
+                        clearInterval(rollInterval);
+                        diceElement.innerHTML = DICE_FACES[localResult - 1];
+                        
+                        const logText = translations[AppState.lang].logLocalResult(localResult);
+                        UIManager.logTerminal(logText, "text-white");
+                        
+                        this.initiateCryptographicProtocol(localResult);
+                    }
+                }, 80);
+            },
+
+            /**
+             * Executes the mock sequence of the Coin-Flipping Commitment Protocol over network.
+             * @param {number} clientValue - The locally generated dice roll.
+             */
+            initiateCryptographicProtocol(clientValue) {
+                const dict = translations[AppState.lang];
+
+                setTimeout(() => UIManager.logTerminal("logGenRA", "text-blue-300"), 1000);
+                setTimeout(() => {
+                    UIManager.logTerminal("logSendCommit", "text-blue-300");
+                    document.getElementById('server-status').innerText = dict.srvProcessing();
+                }, 2000);
+                
+                setTimeout(() => UIManager.logTerminal("logRecvRB", "text-purple-300"), 3500);
+                setTimeout(() => UIManager.logTerminal("logCalcHash", "text-blue-300"), 4500);
+                setTimeout(() => UIManager.logTerminal("logSendHash", "text-blue-300"), 5500);
+                
+                setTimeout(() => {
+                    const serverValue = Math.floor(Math.random() * 6) + 1;
+                    const serverDiceElement = document.getElementById('server-dice');
+                    
+                    serverDiceElement.innerHTML = DICE_FACES[serverValue - 1];
+                    serverDiceElement.classList.replace('text-slate-600', 'text-rose-500');
+                    document.getElementById('server-status').innerText = dict.srvRevealed();
+                    
+                    UIManager.logTerminal(dict.logServerReveal(serverValue), "text-rose-400");
+                    
+                    setTimeout(() => UIManager.logTerminal("logRevealOpen", "text-blue-300"), 7500);
+                    setTimeout(() => UIManager.logTerminal("logVerify", "text-emerald-400 font-bold"), 9000);
+                    setTimeout(() => this.presentResultModal(clientValue, serverValue), 10000);
+                }, 6500);
+            },
+
+            /**
+             * Evaluates the condition logic and renders the outcome payload to the DOM.
+             * @param {number} clientVal - Local client value.
+             * @param {number} serverVal - Remote server value.
+             */
+            presentResultModal(clientVal, serverVal) {
+                const modal = document.getElementById('result-modal');
+                const title = document.getElementById('modal-title');
+                const desc = document.getElementById('modal-desc');
+                const icon = document.getElementById('modal-icon');
+                const dict = translations[AppState.lang];
+                
+                modal.classList.replace('modal-inactive', 'modal-active');
+
+                // Determine outcome
+                if (clientVal > serverVal) {
+                    icon.innerHTML = '🏆';
+                    title.innerText = dict.modWinTitle;
+                    title.className = "text-4xl font-black mb-4 text-emerald-400 uppercase tracking-wide";
+                    desc.innerHTML = dict.modWinDesc(clientVal, serverVal);
+                } else if (clientVal < serverVal) {
+                    icon.innerHTML = '💀';
+                    title.innerText = dict.modLoseTitle;
+                    title.className = "text-4xl font-black mb-4 text-rose-500 uppercase tracking-wide";
+                    desc.innerHTML = dict.modLoseDesc(clientVal, serverVal);
+                } else {
+                    icon.innerHTML = '🤝';
+                    title.innerText = dict.modDrawTitle;
+                    title.className = "text-4xl font-black mb-4 text-yellow-400 uppercase tracking-wide";
+                    desc.innerHTML = dict.modDrawDesc(clientVal);
+                }
+            },
+
+            /**
+             * Clears the board state and initializes the environment for a new round.
+             */
+            resetState() {
+                document.getElementById('result-modal').classList.replace('modal-active', 'modal-inactive');
+                document.getElementById('local-dice').innerHTML = '<i class="fas fa-dice-d6"></i>';
+                document.getElementById('server-dice').innerHTML = '<i class="fas fa-question-circle"></i>';
+                document.getElementById('server-dice').className = 'text-7xl my-6 text-slate-600 transition-colors duration-300';
+                document.getElementById('server-status').innerText = translations[AppState.lang].serverWait;
+                document.getElementById('btn-roll').classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                AppState.isProcessingTurn = false; // Release mutex lock
+                UIManager.logTerminal("logNewRound", "text-slate-500 italic mt-2 mb-1");
+            }
+        };
+
+        // Initialize i18n placeholders on load
+        window.onload = () => {
+            const dict = translations[AppState.lang];
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) {
+                    el.innerText = dict[key];
+                }
+            });
+        };
+
+    </script>
+</body>
+</html>
