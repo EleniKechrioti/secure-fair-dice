@@ -1,0 +1,16 @@
+Django>=5.0
+
+# API (Login/Register endpoints)
+djangorestframework
+
+# JWT Token authentication
+djangorestframework-simplejwt
+PyJWT
+
+# Database Drivers
+# Αν χρησιμοποιήσετε MySQL ή MariaDB
+mysqlclient
+# PyMySQL  (Βάλε αυτό αντί για mysqlclient αν είσαι σε Windows και σου βγάλει error)
+
+# Αν χρησιμοποιήσετε PostgreSQL
+# psycopg2-binary
