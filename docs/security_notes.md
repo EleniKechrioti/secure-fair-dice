@@ -36,10 +36,7 @@ The frontend was upgraded from a visual mock-up to a fully functional cryptograp
 
 **Asynchronous Network Sync:** The game engine now uses async/await fetch requests to communicate with the Django backend. The UI updates (terminal logs, opponent dice reveal) are now strictly synchronized with the actual cryptographic responses from the server, eliminating the use of fake setTimeout delays.
 
-## 4. Transport Layer Security (TLS) Implementation
-To ensure confidentiality and integrity of all communications between the client and the Django server, the application was upgraded to use HTTPS via TLS encryption. This prevents attackers from intercepting or tampering with the messages exchanged during the cryptographic protocol.
-
-## 5. Summary of Security Achievements
+## 4. Summary of Security Achievements
 By implementing the above architecture, we successfully achieved:
 
 * **Zero-Knowledge Proof Concept:** Neither party can know the other's roll before committing to their own.
@@ -50,7 +47,5 @@ By implementing the above architecture, we successfully achieved:
 
 * **Protection against Side-Channel Attacks:** Using constant-time hash verification.
 
-* **Protection from Man-in-the-Middle (MITM) Attacks:** Attackers cannot intercept or alter protocol messages.
 
-* **Server Authentication:** Clients can verify they are communicating with the legitimate server.
 

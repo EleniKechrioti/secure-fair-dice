@@ -1,5 +1,19 @@
 ## Transport Layer Security (TLS) Implementation
 
+To ensure confidentiality and integrity of all communications between the client and the Django server, the application was upgraded to use HTTPS via TLS encryption. 
+
+By integrating TLS into the application we achieved:
+
+* **Confidentiality:** All client-server communication is encrypted.
+
+* **Integrity:** Messages exchanged during the commitment protocol cannot be modified in transit.
+
+* **Server Authentication:** Clients can verify they are communicating with the legitimate server.
+
+* **Protection from Man-in-the-Middle (MITM) attacks:** Attackers cannot intercept or alter protocol messages.
+
+This ensures that the Hash-based Coin-Flipping Commitment Protocol operates over a secure communication channel, preserving the cryptographic guarantees of the protocol.
+
 The following steps outline the process followed to establish a secure HTTPS connection via TLS encryption between the client and the Django server.
 
 ---
