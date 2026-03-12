@@ -9,7 +9,9 @@ PyJWT
 bcrypt
 
 # Database Drivers
-pymysql
-cryptography # It is required from pymysql in order to handle the authentication mathod used by MySQL
+# Αν χρησιμοποιήσετε MySQL ή MariaDB
+mysqlclient
+# PyMySQL  (Βάλε αυτό αντί για mysqlclient αν είσαι σε Windows και σου βγάλει error)
 
-django-extensions
+# Αν χρησιμοποιήσετε PostgreSQL
+# psycopg2-binary
