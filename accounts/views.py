@@ -3,7 +3,7 @@ import json
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
-from .models import User
+from .models import AppUser
 from .utils import hash_password, verify_password
 
 
@@ -11,19 +11,22 @@ from .utils import hash_password, verify_password
 def register(request):
 
     if request.method != 'POST':
-        return JsonResponse({"error": "POST required"})
+        return JsonResponse({"error": "POST required"}, status=405)
 
     data = json.loads(request.body)
 
-    first_name = data.get("first_name")
-    last_name = data.get("last_name")
-    username = data.get("username")
-    password = data.get("password")
+    first_name = data.get("first_name", "").strip()
+    last_name = data.get("last_name", "").strip()
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
 
-    if User.objects.filter(username=username).exists():
-        return JsonResponse({"error": "username exists"})
+    if not first_name or not last_name or not username or not password:
+        return JsonResponse({"error": "All fields are required"}, status=400)
 
-    user = User.objects.create(
+    if AppUser.objects.filter(username=username).exists():
+        return JsonResponse({"error": "Username already exists"}, status=400)
+
+    user = AppUser.objects.create(
         first_name=first_name,
         last_name=last_name,
         username=username,
@@ -33,27 +36,30 @@ def register(request):
     return JsonResponse({
         "message": "user created",
         "user_id": user.id
-    })
+    }, status=201)
 
 
 @csrf_exempt
 def login(request):
 
     if request.method != 'POST':
-        return JsonResponse({"error": "POST required"})
+        return JsonResponse({"error": "POST required"}, status=405)
 
     data = json.loads(request.body)
 
-    username = data.get("username")
-    password = data.get("password")
+    username = data.get("username", "").strip()
+    password = data.get("password", "").strip()
+
+    if not username or not password:
+        return JsonResponse({"error": "Username and password are required"}, status=400)
 
     try:
-        user = User.objects.get(username=username)
-    except User.DoesNotExist:
-        return JsonResponse({"error": "invalid credentials"})
+        user = AppUser.objects.get(username=username)
+    except AppUser.DoesNotExist:
+        return JsonResponse({"error": "invalid credentials"}, status=401)
 
     if not verify_password(password, user.password_hash):
-        return JsonResponse({"error": "invalid credentials"})
+        return JsonResponse({"error": "invalid credentials"}, status=401)
 
     return JsonResponse({
         "message": "login successful",
