@@ -41,14 +41,14 @@ python manage.py migrate
 Fire up the Django development server with:
 
 ```bash
-python manage.py runserver
+python manage.py runserver_plus 127.0.0.1:8000 --cert-file certs/server.crt --key-file certs/server.key
 ```
 
 ## 5. Play the Game
 Open your favorite web browser and go to:
 
 ```
-http://127.0.0.1:8000
+https://127.0.0.1:8000
 ```
 
 That's it! You can now test the registration, login, and the dice commitment protocol.

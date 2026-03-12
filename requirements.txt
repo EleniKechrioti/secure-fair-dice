@@ -12,4 +12,7 @@ bcrypt
 pymysql
 cryptography # It is required from pymysql in order to handle the authentication mathod used by MySQL
 
+# Development tools
 django-extensions
+Werkzeug
+pyOpenSSL
