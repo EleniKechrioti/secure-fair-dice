@@ -9,5 +9,7 @@ PyJWT
 bcrypt
 
 # Database Drivers
-pymysql==1.1.1
-cryptography==42.0.8 # It is required from pymysql in order to handle the authentication mathod used by MySQL
+pymysql
+cryptography # It is required from pymysql in order to handle the authentication mathod used by MySQL
+
+django-extensions

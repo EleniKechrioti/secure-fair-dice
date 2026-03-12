@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure--m(3sr0dtpw2^nmd$t)r$78@q*6w*9)k1ai%jta(hgvw!1mv_1
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1']
 STATIC_URL = 'static/'
 
 # Application definition
@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'game_app',
     'accounts',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
@@ -124,3 +125,7 @@ STATIC_URL = 'static/'
 
 # Django defines primary key id automatically
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SECURE_SSL_REDIRECT = False
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
