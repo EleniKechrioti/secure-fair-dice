@@ -66,7 +66,11 @@ const UIManager = {
         const desc = translations[AppState.lang][descKey] || descKey;
 
         const borderColors = { error: 'border-rose-500', success: 'border-emerald-500', info: 'border-blue-500' };
-        const iconColors = { error: '<i class="fas fa-exclamation-circle text-rose-500"></i>', success: '<i class="fas fa-check-circle text-emerald-500"></i>' };
+        const iconColors = { 
+            error: '<i class="fas fa-exclamation-circle text-rose-500"></i>', 
+            success: '<i class="fas fa-check-circle text-emerald-500"></i>',
+            info: '<i class="fas fa-info-circle text-blue-500"></i>' 
+        };
 
         toast.className = `bg-slate-800 border-l-4 ${borderColors[type]} p-4 rounded shadow-xl flex items-start gap-3 w-80 transform transition-all duration-300 translate-x-full opacity-0 pointer-events-auto`;
         toast.innerHTML = `<div class="mt-0.5 text-lg">${iconColors[type]}</div><div><h4 class="font-bold text-slate-100">${title}</h4><p class="text-sm text-slate-400 mt-1">${desc}</p></div>`;

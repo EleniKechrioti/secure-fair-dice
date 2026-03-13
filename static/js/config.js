@@ -60,6 +60,10 @@ const translations = {
         toastRegSuccessDesc: "Ο λογαριασμός δημιουργήθηκε. Παρακαλώ συνδεθείτε.",
         toastLoginSuccessTitle: "Καλωσήρθατε",
         toastLoginSuccessDesc: "Επιτυχής σύνδεση στο σύστημα.",
+
+        btnLogout: "Έξοδος",
+        toastLogoutTitle: "Αποσύνδεση",
+        toastLogoutDesc: "Αποσυνδεθήκατε επιτυχώς από τον λογαριασμό σας.",
         
         logAuthReq: "Αίτημα εγγραφής χρήστη στο σύστημα...",
         logAuthSuccess: "Επιτυχής αυθεντικοποίηση. Έναρξη συνεδρίας.",
@@ -127,6 +131,10 @@ const translations = {
         toastRegSuccessDesc: "Account created successfully. Please login.",
         toastLoginSuccessTitle: "Welcome",
         toastLoginSuccessDesc: "Successfully authenticated to the system.",
+
+        btnLogout: "Logout",
+        toastLogoutTitle: "Logged Out",
+        toastLogoutDesc: "You have been successfully logged out.",
 
         logAuthReq: "Initiating user registration request...",
         logAuthSuccess: "Authentication successful. Session established.",

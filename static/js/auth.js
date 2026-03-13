@@ -65,14 +65,6 @@ const AuthService = {
             console.error(error);
             UIManager.showToast("errServerTitle", "errServerDesc", "error");
         }
-
-        /** UIManager.logTerminal("logAuthReq", "text-blue-400");
-        *
-        * setTimeout(() => {
-        *     UIManager.showToast("toastRegSuccessTitle", "toastRegSuccessDesc", "success");
-        *     this.toggleForms();
-        * }, 600);
-        */
     },
 
     /**
@@ -108,6 +100,7 @@ const AuthService = {
             // Transition layout views
             document.getElementById('auth-section').classList.add('hidden');
             document.getElementById('game-section').classList.remove('opacity-80');
+            document.getElementById('btn-logout').classList.remove('hidden');
 
             const dict = translations[AppState.lang];
             const statusContainer = document.getElementById('user-status-container');
@@ -121,5 +114,33 @@ const AuthService = {
             console.error(error);
             UIManager.showToast("errServerTitle", "errServerDesc", "error");
         }
+    },
+
+    /**
+     * Clears user session, removes tokens, and resets the UI to default state.
+     */
+    logout() {
+        const dict = translations[AppState.lang];
+
+        // Clear session state and storage
+        AppState.isAuthenticated = false;
+        localStorage.removeItem('jwt_token');
+        localStorage.removeItem('logged_in_user');
+
+        // Reset UI (Hide game board, show login form, reset status badge)
+        document.getElementById('auth-section').classList.remove('hidden');
+        document.getElementById('game-section').classList.add('opacity-80');
+        document.getElementById('btn-logout').classList.add('hidden'); // Hide logout button
+
+        // Reset Status Badge to Offline
+        const statusContainer = document.getElementById('user-status-container');
+        statusContainer.classList.replace('bg-slate-800', 'bg-slate-700');
+        statusContainer.innerHTML = `<i class="fas fa-user-circle mr-1"></i> <span id="user-status-text">${dict.statusOffline}</span>`;
+
+        // Clear Terminal for the next user
+        document.getElementById('protocol-logs').innerHTML = `<div>> <span>${dict.termInit}</span></div>`;
+
+        // Show notification (Blue color / Info)
+        UIManager.showToast("toastLogoutTitle", "toastLogoutDesc", "info");
     }
 };
