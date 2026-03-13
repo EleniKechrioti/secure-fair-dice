@@ -95,14 +95,14 @@
                     
                     <div id="form-login" class="transition-all duration-300">
                         <h2 class="text-2xl font-bold mb-6" data-i18n="loginTitle">Secure Login</h2>
-                        <form onsubmit="AuthService.authenticate(event)" class="space-y-4">
+                        <form id="form-login" onsubmit="AuthService.authenticate(event)" class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblUsername">Username</label>
-                                <input type="text" required value="player1" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                                <input id="login-username" type="text" placeholder="Username" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblPassword">Password</label>
-                                <input type="password" required value="123456" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                                <input id="login-password" type="password" placeholder="Password" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
                             </div>
                             <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-lg transition duration-200 mt-2 flex justify-center items-center">
                                 <span data-i18n="btnLogin">Login</span>
@@ -114,26 +114,27 @@
                         </p>
                     </div>
 
+                    <!-- REGISTER FORM -->
                     <div id="form-register" class="hidden transition-all duration-300">
                         <h2 class="text-2xl font-bold mb-6" data-i18n="regTitle">New Registration</h2>
                         <form onsubmit="AuthService.register(event)" class="space-y-4">
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblFirst">First Name</label>
-                                    <input type="text" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 focus:border-indigo-500 outline-none transition text-white">
+                                    <input id="register-firstname" type="text" placeholder="First Name" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 focus:border-indigo-500 outline-none transition text-white">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblLast">Last Name</label>
-                                    <input type="text" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 focus:border-indigo-500 outline-none transition text-white">
+                                    <input id="register-lastname" type="text" placeholder="Last Name" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 focus:border-indigo-500 outline-none transition text-white">
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblUsername">Username</label>
-                                <input type="text" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                                <input id="register-username" type="text" placeholder="Username" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
                             </div>
                             <div>
                                 <label class="block text-sm font-medium mb-1 text-slate-300" data-i18n="lblPassword">Password</label>
-                                <input type="password" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
+                                <input id="register-password" type="password" placeholder="Password" required class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 focus:border-indigo-500 outline-none transition text-white">
                             </div>
                             <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition duration-200 mt-2 flex justify-center items-center">
                                 <span data-i18n="btnSignup">Sign Up</span>

@@ -34,7 +34,7 @@ def register(request):
     )
 
     return JsonResponse({
-        "message": "user created",
+        "message": "User created successfully",
         "user_id": user.id
     }, status=201)
 
@@ -62,6 +62,6 @@ def login(request):
         return JsonResponse({"error": "invalid credentials"}, status=401)
 
     return JsonResponse({
-        "message": "login successful",
+        "message": "Login successful",
         "user": user.username
-    })
+    }, status=200)

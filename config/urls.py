@@ -21,5 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     # Connect the urls of game_app to the main site
     path('', include('game_app.urls')),
-    path('api/', include('accounts.urls')),
+    path('', include('accounts.urls')),
 ]
