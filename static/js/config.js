@@ -75,6 +75,13 @@ const translations = {
         logNewRound: "--- Αρχικοποίηση νέου γύρου ---",
         termDisclaimer: "Αυτό το παιχνίδι χρησιμοποιεί ένα Πρωτόκολλο Δέσμευσης (Commitment Scheme). Και τα δύο μέρη δεσμεύονται σε μια τιμή πριν την αποκαλύψουν, εξασφαλίζοντας ότι κανένα δεν μπορεί να αλλάξει τη ρίψη του αφού δει τη ρίψη του άλλου.",
         
+        errServerTitle: "Σφάλμα Διακομιστή",
+        errServerDesc: "Η επικοινωνία με τον Server απέτυχε.",
+        errRegTitle: "Σφάλμα Εγγραφής",
+        errRegFallback: "Η εγγραφή απέτυχε. Ελέγξτε τα στοιχεία σας.",
+        errLoginTitle: "Σφάλμα Σύνδεσης",
+        errLoginFallback: "Λάθος όνομα χρήστη ή κωδικός.",
+        
         // Dynamic string generators
         logLocalResult: (val) => `Τοπικό αποτέλεσμα: [${val}]`,
         srvProcessing: () => "Επεξεργασία...",
@@ -134,6 +141,13 @@ const translations = {
         logVerify: "Server successfully verified Hash signature. [VERIFIED]",
         logNewRound: "--- Initialization of new cryptographic round ---",
         termDisclaimer: "This game uses a Commitment Scheme. Both parties commit to a value before revealing, ensuring neither can change their roll after seeing the other's.",
+
+        errServerTitle: "Server Error",
+        errServerDesc: "Communication with the server failed.",
+        errRegTitle: "Registration Error",
+        errRegFallback: "Registration failed. Please check your details.",
+        errLoginTitle: "Login Error",
+        errLoginFallback: "Invalid username or password.",
         
         // Dynamic string generators
         logLocalResult: (val) => `Local result captured: [${val}]`,

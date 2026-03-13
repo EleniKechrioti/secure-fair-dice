@@ -34,6 +34,8 @@ const AuthService = {
         const password = document.getElementById('register-password').value.trim();
 
         try {
+            UIManager.logTerminal("logAuthReq", "text-blue-400");
+
             const response = await fetch('/api/register/', {
                 method: 'POST',
                 headers: getApiHeaders(),
@@ -48,15 +50,20 @@ const AuthService = {
             const data = await response.json();
 
             if (!response.ok) {
-                alert(data.error || 'Registration failed');
+                UIManager.showToast("errRegTitle", data.error || "errRegFallback", "error");
                 return;
             }
 
-            alert('Registration successful. Please login.');
+            UIManager.showToast("toastRegSuccessTitle", "toastRegSuccessDesc", "success");
+
+            setTimeout(() => {
+                this.toggleForms();
+            }, 600);
+
             this.toggleForms();
         } catch (error) {
             console.error(error);
-            alert('Server error during registration');
+            UIManager.showToast("errServerTitle", "errServerDesc", "error");
         }
 
         /** UIManager.logTerminal("logAuthReq", "text-blue-400");
@@ -91,7 +98,7 @@ const AuthService = {
             const data = await response.json();
 
             if (!response.ok) {
-                alert(data.error || 'Login failed');
+                UIManager.showToast("errLoginTitle", data.error || "errLoginFallback", "error");
                 return;
             }
 
@@ -112,7 +119,7 @@ const AuthService = {
             UIManager.showToast("toastLoginSuccessTitle", "toastLoginSuccessDesc", "success");
         } catch (error){
             console.error(error);
-            alert('Server error during login');
+            UIManager.showToast("errServerTitle", "errServerDesc", "error");
         }
     }
 };
