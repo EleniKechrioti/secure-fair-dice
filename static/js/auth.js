@@ -9,6 +9,45 @@ function getApiHeaders() {
     };
 }
 
+function validatePasswordPolicy(password, username) {
+    const commonPasswords = [
+        "12345678",
+        "123456789",
+        "password",
+        "Aa123456",
+        "1234567890",
+        "password123",
+        "Pass@123",
+        "admin123",
+        "12345678910",
+        "P@ssw0rd",
+        "Password",
+        "Aa@123456"
+    ];
+
+    if (!password) {
+        return "The password is mandatory.";
+    }
+
+    if (password.length < 8) {
+        return "The password must have at least 8 characters.";
+    }
+
+    if (password.length > 64) {
+        return "The password must have a maximum of 64 characters.";
+    }
+
+    if (commonPasswords.includes(password.toLowerCase())) {
+        return "The password is very common. Choose a stronger password.";
+    }
+
+    if (username && password.toLowerCase().includes(username.toLowerCase())) {
+        return "The password must not contain the username.";
+    }
+
+    return null;
+}
+
 /**
  * Authentication Service
  * Handles user registration, login mechanics, JSON Web Token (JWT) management, and layout switching.
@@ -35,6 +74,17 @@ const AuthService = {
         const lastName = document.getElementById('register-lastname').value.trim();
         const username = document.getElementById('register-username').value.trim();
         const password = document.getElementById('register-password').value.trim();
+        
+        if (!firstName || !lastName || !username || !password) {
+            UIManager.showToast("errRegTitle", "All fields are required", "error");
+            return;
+        }
+
+        const passwordError = validatePasswordPolicy(password, username);
+        if (passwordError) {
+            UIManager.showToast("errRegTitle", passwordError, "error");
+            return;
+        }
 
         try {
             UIManager.logTerminal("logAuthReq", "text-blue-400");

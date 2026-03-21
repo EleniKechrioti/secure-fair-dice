@@ -4,7 +4,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import AppUser
-from .utils import hash_password, verify_password
+from .utils import hash_password, verify_password, validate_password_policy
 
 
 @csrf_exempt
@@ -25,6 +25,11 @@ def register(request):
 
     if AppUser.objects.filter(username=username).exists():
         return JsonResponse({"error": "Username already exists"}, status=400)
+    
+    is_valid, error_message = validate_password_policy(password, username)
+
+    if not is_valid:
+        return JsonResponse({"error": error_message}, status=400)
 
     user = AppUser.objects.create(
         first_name=first_name,
@@ -56,10 +61,10 @@ def login(request):
     try:
         user = AppUser.objects.get(username=username)
     except AppUser.DoesNotExist:
-        return JsonResponse({"error": "invalid credentials"}, status=401)
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
 
     if not verify_password(password, user.password_hash):
-        return JsonResponse({"error": "invalid credentials"}, status=401)
+        return JsonResponse({"error": "Invalid credentials"}, status=401)
 
     return JsonResponse({
         "message": "Login successful",
