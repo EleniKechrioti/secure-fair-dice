@@ -4,8 +4,29 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 
 from .models import AppUser
-from .utils import hash_password, verify_password, validate_password_policy
+from .utils import hash_password, verify_password, validate_password_policy, create_jwt_token, decode_jwt_token
 
+def get_user_from_token(request):
+    auth_header = request.headers.get("Authorization")
+
+    if not auth_header:
+        return None, JsonResponse({"error": "Authorization header missing"}, status=401)
+
+    if not auth_header.startswith("Bearer "):
+        return None, JsonResponse({"error": "Invalid authorization format"}, status=401)
+
+    token = auth_header.split(" ")[1]
+
+    payload, error = decode_jwt_token(token)
+    if error:
+        return None, JsonResponse({"error": error}, status=401)
+
+    try:
+        user = AppUser.objects.get(id=payload["user_id"])
+    except AppUser.DoesNotExist:
+        return None, JsonResponse({"error": "User not found"}, status=401)
+
+    return user, None
 
 @csrf_exempt
 def register(request):
@@ -40,7 +61,8 @@ def register(request):
 
     return JsonResponse({
         "message": "User created successfully",
-        "user_id": user.id
+        "user_id": user.id,
+        "username": user.username
     }, status=201)
 
 
@@ -65,8 +87,11 @@ def login(request):
 
     if not verify_password(password, user.password_hash):
         return JsonResponse({"error": "Invalid credentials"}, status=401)
+    
+    token = create_jwt_token(user)
 
     return JsonResponse({
         "message": "Login successful",
-        "user": user.username
+        "user": user.username,
+        "token": token
     }, status=200)

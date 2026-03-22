@@ -5,7 +5,7 @@
 function getApiHeaders() {
     return {
         'Content-Type': 'application/json',
-        // 'Authorization': `Bearer ${localStorage.getItem('jwt_token')}` // Un-comment when Dev 1 activates JWT on the Backend
+        'Authorization': `Bearer ${localStorage.getItem('jwt_token')}`
     };
 }
 
@@ -151,10 +151,11 @@ const AuthService = {
                 return;
             }
 
+            localStorage.setItem("jwt_token", data.token); // save the actual JWT token here
+            localStorage.setItem("logged_in_user", data.user);
+
             // Authentication successful: Activate game state and store session data
             AppState.isAuthenticated = true; // Unlock the game state
-            localStorage.setItem('logged_in_user', data.user);
-            // localStorage.setItem('jwt_token', data.access); // save the actual JWT token here
 
             // Transition layout views (Hide auth panel, reveal game board)
             document.getElementById('auth-section').classList.add('hidden');
@@ -186,9 +187,9 @@ const AuthService = {
         const dict = translations[AppState.lang];
 
         // Clear session state and securely remove tokens from browser memory
-        AppState.isAuthenticated = false;
         localStorage.removeItem('jwt_token');
         localStorage.removeItem('logged_in_user');
+        AppState.isAuthenticated = false;
 
         // Reset UI Layout (Hide game board, show login form)
         document.getElementById('auth-section').classList.remove('hidden');

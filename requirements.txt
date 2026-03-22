@@ -10,7 +10,7 @@ bcrypt
 
 # Database Drivers
 pymysql
-cryptography # It is required from pymysql in order to handle the authentication mathod used by MySQL
+cryptography # It is required from pymysql in order to handle the authentication method used by MySQL
 
 # Development tools
 django-extensions
