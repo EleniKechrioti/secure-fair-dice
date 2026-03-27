@@ -4,6 +4,7 @@ Includes the HTML rendering view and the DRF API endpoints for the commitment pr
 """
 
 import random
+import secrets
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from .crypto import generate_cryptographic_nonce, verify_commitment
+from accounts.views import get_user_from_token
 
 # FRONTEND RENDERING VIEW
 
@@ -29,11 +31,13 @@ class GameInitializationView(APIView):
     The client requests to start a round. The server generates its own secret roll ($V_B$)
     and a cryptographic nonce ($r_B$), saving them securely in the user's session.
     """
-    # Requires the user to be logged in
-    permission_classes = [] #permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        server_roll = random.randint(1, 6)
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        
+        server_roll = secrets.choice([1, 2, 3, 4, 5, 6])
         server_nonce = generate_cryptographic_nonce()
 
         # Store critical data in the secure server-side session
@@ -53,9 +57,13 @@ class GameCommitmentView(APIView):
     The client submits their commitment hash ($h_{commit}$). 
     The server stores it and responds by revealing its own roll ($V_B$).
     """
-    permission_classes = [] #permission_classes = [IsAuthenticated]
+    
 
     def post(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        
         if request.session.get('protocol_stage') != 'initialized':
             return Response({"error": "Protocol not initialized. Request r_B first."}, 
                             status=status.HTTP_400_BAD_REQUEST)
@@ -81,9 +89,12 @@ class GameRevealView(APIView):
     The client reveals their roll ($V_A$) and nonce ($r_A$). 
     The server verifies the hash, determines the winner, and clears the session.
     """
-    permission_classes = [] #permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        user, error_response = get_user_from_token(request)
+        if error_response:
+            return error_response
+        
         if request.session.get('protocol_stage') != 'committed':
             return Response({"error": "Protocol violation. Missing commitment phase."}, 
                             status=status.HTTP_400_BAD_REQUEST)

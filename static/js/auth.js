@@ -206,5 +206,38 @@ const AuthService = {
 
         // Provide visual feedback to the user
         UIManager.showToast("toastLogoutTitle", "toastLogoutDesc", "info");
+    },
+
+    /**
+     * Checks if there is an active session in localStorage during page load.
+     * If a token is found, it restores the UI to the "Logged In" state.
+     */
+    checkExistingSession() {
+        const token = localStorage.getItem('jwt_token');
+        const user = localStorage.getItem('logged_in_user');
+
+        if (token && user) {
+            // Reinstantiate the JavaScript memory state to reflect an active session
+            AppState.isAuthenticated = true;
+
+            // Restore UI to reflect logged-in status
+            document.getElementById('auth-section').classList.add('hidden');
+            document.getElementById('game-section').classList.remove('opacity-80');
+            document.getElementById('btn-logout').classList.remove('hidden');
+
+            // Restore user status badge with username
+            const dict = translations[AppState.lang];
+            const statusContainer = document.getElementById('user-status-container');
+            statusContainer.classList.replace('bg-slate-700', 'bg-slate-800');
+            statusContainer.innerHTML = `<i class="fas fa-user-check text-emerald-400 mr-1"></i> <span id="user-status-text">${dict.statusOnline} (${user})</span>`;
+
+            // Log session restoration in the protocol terminal for transparency
+            UIManager.logTerminal("Active session found. Automatic reconnection.", "text-emerald-400 italic");
+        }
     }
 };
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    AuthService.checkExistingSession();
+});
