@@ -14,5 +14,6 @@ cryptography # It is required from pymysql in order to handle the authentication
 
 # Development tools
 django-extensions
+django-ratelimit
 Werkzeug
 pyOpenSSL

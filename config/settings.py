@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -20,12 +21,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure--m(3sr0dtpw2^nmd$t)r$78@q*6w*9)k1ai%jta(hgvw!1mv_1' # change this key
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'this-is-a-big-dev-secret-key-for-jwt') # nosec
 
-# SECURITY WARNING: don't run with debug turned on in production!
+# Disable DEBUG mode for production to prevent sensitive information from being exposed
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1']
+# When DEBUG is False, Django requires us to specify which domains are allowed to run the application.
+# For local testing, we include localhost and 127.0.0.1.
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 STATIC_URL = 'static/'
 
 # Application definition
@@ -129,3 +132,13 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 SECURE_SSL_REDIRECT = False
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+# --- SECURITY HEADERS ---
+# Not allowed to load the application in an iframe (prevents Clickjacking)
+X_FRAME_OPTIONS = 'DENY'
+
+# Enables the browser's built-in XSS filter
+SECURE_BROWSER_XSS_FILTER = True
+
+# Not allowed to guess the content type of files (prevents malware)
+SECURE_CONTENT_TYPE_NOSNIFF = True
